@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">demoandroid</string>
+    <string-array name="environment_options">
+        <item>Staging</item>
+        <item>Production</item>
+        <item>Development</item>
+    </string-array>
+</resources>
