@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="60dp">
+
+    <!-- ScrollView para el contenido principal -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/configLayout">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ImageView para la imagen de URL -->
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:scaleType="fitCenter"/>
+
+            <!-- Título "Your cart" -->
+            <TextView
+                android:id="@+id/cartTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your cart"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:padding="8dp" />
+
+            <!-- Inclusión del layout de fila de producto -->
+            <include layout="@layout/product_row"/>
+
+            <!-- Botones Pagar y Guardar método de pago -->
+            <Button
+                android:id="@+id/payButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pagar"
+                android:layout_marginTop="30dp"
+                android:textColor="@android:color/white"
+                android:padding="8dp"/>
+
+            <Button
+                android:id="@+id/savePaymentMethodButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Guardar método de pago"
+                android:textColor="@android:color/white"
+                android:padding="8dp"/>
+
+            <Button
+                android:id="@+id/createOrderButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Crear Orden"
+                android:textColor="@android:color/white"
+                android:padding="8dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Layout de configuración en la parte inferior -->
+    <LinearLayout
+        android:id="@+id/configLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp">
+
+        <!-- LinearLayout para Enter API Key -->
+        <EditText
+            android:id="@+id/inputApiKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter API Key"
+            android:inputType="textMultiLine"
+            android:textSize="16sp"
+            android:textIsSelectable="true"
+            android:padding="16dp"
+            android:scrollbars="vertical"
+            android:text="799680ba34b854854a44039397e77d89054a8be84ebb7c06731ab69018ea53fab13cf96bd5cfcfa3e1dc3cc9ea17e68c1b0d76380ee77d7db7c5572ce3e1"/>
+
+        <!-- Spinner para seleccionar Environment -->
+        <Spinner
+            android:id="@+id/environmentOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/environment_options"
+            android:textSize="10sp"/>
+
+        <!-- Botón para aplicar configuración -->
+        <Button
+            android:id="@+id/applyConfigButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply Config"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/orderTokenTextView"
+            android:text="Current Token: "/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/orderToken" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/userTokenTextView"
+            android:text="User Token: "/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/userToken" />
+    </LinearLayout>
+</RelativeLayout>
