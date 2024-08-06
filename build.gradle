@@ -1,0 +1,111 @@
+plugins {
+    id 'com.android.library' version '8.1.2' apply true
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply true
+    id 'maven-publish'
+    id 'signing'
+}
+
+ext {
+    urlMaven = System.getProperty("urlMaven", "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+    usernameMaven = System.getProperty("usernameMaven", "")
+    passwordMaven = System.getProperty("passwordMaven", "")
+}
+
+android {
+    namespace 'com.deuna.maven'
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 22
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.deuna.maven'
+            artifactId 'deunasdk'
+            version '2.5.0'
+            artifact("$buildDir/outputs/aar/deuna-sdk-android-release.aar")
+            pom {
+                name = 'Android SDK DEUNA'
+                description = 'SDK for use in external merchants DEUNA'
+                url = 'https://github.com/deuna-developers/deuna-sdk-android'
+                developers {
+                    developer {
+                        id = 'deunadevelopers'
+                        name = 'DEUNA Developers'
+                        email = 'developers@deuna.com'
+                    }
+                }
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/deuna-developers/deuna-sdk-android.git'
+                    developerConnection = 'scm:git:ssh://github.com/deuna-developers/deuna-sdk-android.git'
+                    url = 'https://github.com/deuna-developers/deuna-sdk-android'
+                }
+            }
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each { dependency ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url urlMaven
+            credentials {
+                username = usernameMaven
+                password = passwordMaven
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications
+}
+
+dependencies {
+    api 'com.squareup.okhttp3:okhttp:4.12.0'
+    api 'com.squareup.retrofit2:retrofit:2.9.0'
+    api 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    api 'com.squareup.retrofit2:converter-gson:2.9.0'
+    testImplementation 'junit:junit:4.13.2'
+    implementation("com.google.code.gson:gson") {
+        version {
+            strictly("2.8.9")
+        }
+    }
+}
