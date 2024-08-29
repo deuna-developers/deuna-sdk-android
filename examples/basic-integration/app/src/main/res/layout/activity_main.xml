@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="0dp">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/inputOrderToken"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:hint="@string/enter_order_token"
+                android:inputType="text"
+                android:padding="16dp"
+                android:scrollbars="vertical"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/inputUserToken"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:hint="@string/user_token"
+                android:inputType="text"
+                android:padding="16dp"
+                android:scrollbars="vertical"
+                android:textSize="16sp" />
+
+
+            <Button
+                android:id="@+id/paymentWidgetButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:padding="8dp"
+                android:text="Mostrar widget de pago"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/payButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:padding="8dp"
+                android:text="Mostrar Checkout"
+                android:textColor="@android:color/white" />
+
+
+            <Button
+                android:id="@+id/savePaymentMethodButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginTop="10dp"
+                android:text="Guardar método de pago"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
