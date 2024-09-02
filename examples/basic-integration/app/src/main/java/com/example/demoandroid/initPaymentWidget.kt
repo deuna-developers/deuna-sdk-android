@@ -1,0 +1,100 @@
+package com.example.demoandroid
+
+import android.util.Log
+import com.deuna.maven.initPaymentWidget
+import com.deuna.maven.payment_widget.domain.PaymentWidgetCallbacks
+import com.deuna.maven.shared.PaymentsError
+import com.deuna.maven.shared.toMap
+import org.json.JSONObject
+
+
+/**
+ * Show the payment widget that processes a payment request
+ */
+fun MainActivity.showPaymentWidget() {
+    deunaSdk.initPaymentWidget(
+        context = this, orderToken = orderToken, cssFile = "YOUR_THEME_UUID", // optional
+        callbacks = PaymentWidgetCallbacks().apply {
+            onSuccess = { data ->
+                deunaSdk.close()
+                handlePaymentSuccess(data)
+            }
+            onCanceled = {
+                Log.d(DEBUG_TAG, "Payment was canceled by user")
+            }
+            onCardBinDetected = { cardBinMetadata, refetchOrder ->
+                Log.d(DEBUG_TAG, "cardBinMetadata: $cardBinMetadata")
+                if (cardBinMetadata != null) {
+
+                    deunaSdk.setCustomStyle(
+                        data = JSONObject(
+                            """
+                        {
+                          "theme": {
+                            "colors": {
+                              "primaryTextColor": "#023047",
+                              "backgroundSecondary": "#8ECAE6",
+                              "backgroundPrimary": "#F2F2F2",
+                              "buttonPrimaryFill": "#FFB703",
+                              "buttonPrimaryHover": "#FFB703",
+                              "buttonPrimaryText": "#000000",
+                              "buttonPrimaryActive": "#FFB703"
+                            }
+                          },
+                          "HeaderPattern": {
+                            "overrides": {
+                              "Logo": {
+                                "props": {
+                                  "url": "https://images-staging.getduna.com/ema/fc78ef09-ffc7-4d04-aec3-4c2a2023b336/test2.png"
+                                }
+                              }
+                            }
+                          }
+                        }
+                        """
+                        ).toMap()
+                    )
+
+                    refetchOrder { order ->
+                        Log.d(DEBUG_TAG, "onCardBinDetected > refetchOrder: $order")
+                    }
+
+                }
+            }
+            onInstallmentSelected = { metadata, refetchOrder ->
+                Log.d(DEBUG_TAG, "installmentMetadata: $metadata")
+                refetchOrder { order ->
+                    Log.d(DEBUG_TAG, "onInstallmentSelected > refetchOrder: $order")
+                }
+            }
+            onClosed = {
+                Log.d(DEBUG_TAG, "Widget was closed")
+            }
+            onError = { error ->
+                Log.e(DEBUG_TAG, "Error type: ${error.type}, metadata: ${error.metadata}")
+                when (error.type) {
+                    PaymentsError.Type.INITIALIZATION_FAILED, PaymentsError.Type.NO_INTERNET_CONNECTION -> {
+                        deunaSdk.close()
+                        if (error.metadata != null) {
+                            showPaymentErrorAlertDialog(error.metadata!!)
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+            onEventDispatch = { type, data ->
+                Log.d(DEBUG_TAG, "onEventDispatch ${type.name}: $data")
+            }
+        }, userToken = userToken, paymentMethods = listOf(
+            mapOf(
+                "payment_method" to "voucher",
+                "processors" to listOf("daviplata", "nequi_push_voucher")
+            ), mapOf(
+                "payment_method" to "paypal", "processors" to listOf("paypal")
+            )
+        ), checkoutModules = listOf(
+            mapOf("name" to "module_name")
+        )
+    )
+}
