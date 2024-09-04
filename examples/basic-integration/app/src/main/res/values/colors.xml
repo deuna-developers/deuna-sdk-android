@@ -1,0 +1,5 @@
+<resources>
+    <color name="colorPrimary">#007AFF</color> <!-- Azul estilo iOS -->
+    <color name="colorPrimaryDark">#005BBB</color>
+    <color name="colorAccent">#007AFF</color> <!-- Azul estilo iOS -->
+</resources>
