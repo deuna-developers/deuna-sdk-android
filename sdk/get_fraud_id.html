@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.getduna.com/cdl/index.js"></script>
+  </head>
+  <body>
+    <script>
+
+      /**
+       * @param {Object} props
+       * @param {Object} props.params
+       * @param {string} props.publicApiKey
+       * @param {string} props.env
+       * @returns {Promise<string>}
+       */
+       async function generateFraudId(props) {
+        try {
+          if (!window.DeunaCDL) {
+            console.error("CDL no se ha cargado correctamente");
+            return null;
+          }
+
+          const cdl = window.DeunaCDL();
+          await cdl.configure({
+            apiKey: props.publicApiKey,
+            env: props.env || "production",
+          });
+
+          if (props.params) {
+            await cdl.addFraudProviders(props.params);
+          }
+          return cdl.getFraudId();
+        } catch (error) {
+          console.error("Error al generar el ID de fraude", error);
+          return null;
+        }
+      }
+
+      window.generateFraudId = generateFraudId;
+    </script>
+  </body>
+</html>
