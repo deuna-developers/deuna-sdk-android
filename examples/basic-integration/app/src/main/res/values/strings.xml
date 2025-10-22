@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">demoandroid</string>
+    <string name="_799680ba34b854854a44039397e77d89054a8be84ebb7c06731ab69018ea53fab13cf96bd5cfcfa3e1dc3cc9ea17e68c1b0d76380ee77d7db7c5572ce3e1">799680ba34b854854a44039397e77d89054a8be84ebb7c06731ab69018ea53fab13cf96bd5cfcfa3e1dc3cc9ea17e68c1b0d76380ee77d7db7c5572ce3e1</string>
+    <string name="enter_api_key">Enter API Key</string>
+    <string name="apply_config">Apply Config</string>
+    <string name="current_token">Current Token:</string>
+    <string name="user_token">User Token:</string>
+    <string name="copia_y_pega_tu_api_key">copia_y_pega_tu_api_key</string>
+    <string-array name="environment_options">
+        <item>Staging</item>
+        <item>Production</item>
+        <item>Development</item>
+        <item>Sandbox</item>
+    </string-array>
+</resources>

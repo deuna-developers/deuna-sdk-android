@@ -1,0 +1,25 @@
+package com.deuna.maven.element.domain
+
+enum class ElementEvent(val value: String) {
+    vaultClosed("vaultClosed"),
+    vaultProcessing("vaultProcessing"),
+    vaultSaveClick("vaultSaveClick"),
+    vaultStarted("vaultStarted"),
+    vaultFailed("vaultFailed"),
+    cardSuccessfullyCreated("cardSuccessfullyCreated"),
+    changeAddress("changeAddress"),
+    vaultSaveError("vaultSaveError"),
+    vaultSaveSuccess("vaultSaveSuccess"),
+    vaulClickRedirect3DS("vaulClickRedirect3DS"),
+    cardCreationError("cardCreationError"),
+    paymentMethodsCardIdentityNumberInitiated("paymentMethodsCardIdentityNumberInitiated"),
+    paymentMethodsCardIdentityNumberEntered("paymentMethodsCardIdentityNumberEntered"),
+    paymentMethodsCardNameInitiated("paymentMethodsCardNameInitiated"),
+    paymentMethodsCardNameEntered("paymentMethodsCardNameEntered"),
+    paymentMethodsCardSecurityCodeInitiated("paymentMethodsCardSecurityCodeInitiated"),
+    paymentMethodsCardSecurityCodeEntered("paymentMethodsCardSecurityCodeEntered"),
+    paymentMethodsCardExpirationDateEntered("paymentMethodsCardExpirationDateEntered"),
+    paymentMethodsCardExpirationDateInitiated("paymentMethodsCardExpirationDateInitiated"),
+    paymentMethodsCardNumberEntered("paymentMethodsCardNumberEntered"),
+    paymentMethodsCardNumberInitiated("paymentMethodsCardNumberInitiated"),
+}
