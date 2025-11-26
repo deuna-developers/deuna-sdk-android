@@ -1,0 +1,51 @@
+name: DEUNA SDK Android release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  USER_EMAIL: ${{ secrets.USER_EMAIL }}
+  CLIENT_REPOSITORY: ${{ secrets.CLIENT_REPOSITORY }}
+  DESTINATION_GITHUB_USERNAME: ${{ secrets.DESTINATION_GITHUB_USERNAME }}
+  DESTINATION_REPOSITORY_NAME: ${{ secrets.DESTINATION_REPOSITORY_NAME }}
+
+jobs:
+  copy-to-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+
+      - name: Store the version in version.txt
+        run: echo "${{ steps.get_version.outputs.VERSION }}" > version.txt
+
+      - name: Rename release.yml.template to release.yml
+        run: mv ".github/workflows/release.yml.template" .github/workflows/release.yml
+
+      - name: Push contents to destination repo
+        run: |
+          # Create and navigate to temp_dir
+          mkdir temp_dir
+          shopt -s extglob # This enables extended globbing
+          cp -r !(temp_dir) temp_dir/
+          cp version.txt temp_dir/
+          cp -r .github temp_dir/
+          cd temp_dir
+          
+          # Navigate to temp_dir and set up git
+          git init --initial-branch=main
+          git config user.name "GitHub Action"
+          git config user.email "${{ env.USER_EMAIL }}"
+          git add . --all
+          
+          # Commit and push to the destination repo
+          git commit -m "Release ${{ steps.get_version.outputs.VERSION }}"
+          git remote add origin https://${{ env.DESTINATION_GITHUB_USERNAME }}:${{ secrets.DEUNA_PUBLIC_GITHUB_TOKEN }}@github.com/${{ env.DESTINATION_GITHUB_USERNAME }}/${{ env.DESTINATION_REPOSITORY_NAME }}.git
+          git push -u origin main --force
