@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/new_tab_webview_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <com.deuna.maven.web_views.external_url.ExternalUrlWebView
+        android:id="@+id/new_tab_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>
