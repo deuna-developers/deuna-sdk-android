@@ -1,0 +1,70 @@
+name: Create Release from version.txt
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get the version
+        id: get_version
+        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Create Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag ${{ steps.get_version.outputs.VERSION }}
+
+      - name: Push Tag
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tags: true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Gradle execute permission
+        run: chmod +x gradlew
+
+      - name: Build Explore APK
+        run: |
+          VERSION=$(cat version.txt)
+          ./gradlew :examples:explore:assembleDebug \
+            -PversionName=$VERSION \
+            -PgithubRepo=${{ github.repository }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Explore APK to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: examples/explore/build/outputs/apk/debug/explore-debug.apk
+          asset_name: deuna-explore-${{ steps.get_version.outputs.VERSION }}.apk
+          asset_content_type: application/vnd.android.package-archive
