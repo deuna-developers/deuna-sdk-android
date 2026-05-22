@@ -1,0 +1,102 @@
+name: DEUNA SDK Android release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  USER_EMAIL: ${{ secrets.USER_EMAIL }}
+  CLIENT_REPOSITORY: ${{ secrets.CLIENT_REPOSITORY }}
+  DESTINATION_GITHUB_USERNAME: ${{ secrets.DESTINATION_GITHUB_USERNAME }}
+  DESTINATION_REPOSITORY_NAME: ${{ secrets.DESTINATION_REPOSITORY_NAME }}
+
+jobs:
+  copy-to-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Store the version in version.txt
+        run: echo "${{ steps.get_version.outputs.VERSION }}" > version.txt
+
+      - name: Push contents to destination repo
+        run: |
+          # Create and navigate to temp_dir
+          mkdir temp_dir
+          shopt -s extglob # This enables extended globbing
+          cp -r !(temp_dir) temp_dir/
+          cp version.txt temp_dir/
+          cp -r .github temp_dir/
+
+          # Remove sensitive integration test code and create empty directory
+          rm -rf temp_dir/examples/widgets-in-modal/src/androidTest
+          mkdir -p temp_dir/examples/widgets-in-modal/src/androidTest
+          touch temp_dir/examples/widgets-in-modal/src/androidTest/.gitkeep
+
+          # Remove Docker, preprod and integration CI artifacts (not needed in public repo)
+          rm -f temp_dir/examples/widgets-in-modal/Dockerfile
+          rm -f temp_dir/examples/widgets-in-modal/docker-compose.yml
+          rm -f temp_dir/examples/widgets-in-modal/run-android-tests.sh
+          rm -f temp_dir/examples/widgets-in-modal/README_DOCKER.md
+          rm -f temp_dir/examples/widgets-in-modal/DOCKER_INTEGRATION.md
+          rm -f temp_dir/examples/widgets-in-modal/TESTING_GUIDE.md
+          rm -f temp_dir/examples/widgets-in-modal/repository-list-entry.json
+          rm -rf temp_dir/examples/widgets-in-modal/test-results
+          rm -f temp_dir/examples/widgets-in-modal/check-requirements.sh
+          rm -f temp_dir/.github/workflows/integration-tests.yml
+          rm -f temp_dir/.github/scripts/run-integration-tests-with-video.sh
+
+          cd temp_dir
+
+          # Navigate to temp_dir and set up git
+          git init --initial-branch=main
+          git config user.name "GitHub Action"
+          git config user.email "${{ env.USER_EMAIL }}"
+          git add . --all
+
+          # Commit and push to the destination repo
+          git commit -m "Release ${{ steps.get_version.outputs.VERSION }}"
+          git remote add origin https://${{ env.DESTINATION_GITHUB_USERNAME }}:${{ secrets.DEUNA_PUBLIC_GITHUB_TOKEN }}@github.com/${{ env.DESTINATION_GITHUB_USERNAME }}/${{ env.DESTINATION_REPOSITORY_NAME }}.git
+          git push -u origin main --force
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Gradle execute permission
+        run: chmod +x gradlew
+
+      - name: Enable explore module in settings.gradle.kts
+        run: |
+          sed -i 's|//include( "explore")|include( "explore")|' settings.gradle.kts
+          sed -i 's|//project(":explore").projectDir = file("examples/explore")|project(":explore").projectDir = file("examples/explore")|' settings.gradle.kts
+
+      - name: Build Explore APK
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          ./gradlew :explore:assembleDebug \
+            -PversionName=$VERSION \
+            -PgithubRepo=${{ env.DESTINATION_GITHUB_USERNAME }}/${{ env.DESTINATION_REPOSITORY_NAME }}
+
+      - name: Create release and upload APK to public repo
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          gh release create "v$VERSION" \
+            --repo "${{ env.DESTINATION_GITHUB_USERNAME }}/${{ env.DESTINATION_REPOSITORY_NAME }}" \
+            --title "Release $VERSION" \
+            --notes "Release $VERSION" \
+            "examples/explore/build/outputs/apk/debug/explore-debug.apk#deuna-explore-$VERSION.apk"
+        env:
+          GH_TOKEN: ${{ secrets.DEUNA_PUBLIC_GITHUB_TOKEN }}
