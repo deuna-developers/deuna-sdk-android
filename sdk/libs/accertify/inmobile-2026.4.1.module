@@ -1,0 +1,160 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.inmobile",
+    "module": "inmobile",
+    "version": "2026.4.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "fullNormalReleaseApiElements-published",
+      "attributes": {
+        "InMobileDataLevel": "full",
+        "InMobileProtectionLevel": "normal",
+        "com.android.build.api.attributes.ProductFlavor:InMobileDataLevel": "full",
+        "com.android.build.api.attributes.ProductFlavor:InMobileProtectionLevel": "normal",
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "com.inmobile",
+          "module": "inmobile-common",
+          "version": {
+            "requires": "2026.4.1"
+          }
+        },
+        {
+          "group": "androidx.biometric",
+          "module": "biometric",
+          "version": {
+            "requires": "1.1.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "inmobile-2026.4.1.aar",
+          "url": "inmobile-2026.4.1.aar",
+          "size": 2330469,
+          "sha512": "a4f848bfd9d13059f05e0c33355b5c2bef1cb070450df309d09a7ccf99a81ae80f41d09292c4b09c6a323c44789eb9ad027c62a8dfb1b47d7f7e1603d1650667",
+          "sha256": "c9e2d7a42e75051d189cfb24fb4e3ea290242050148133a816dd09a307c457d8",
+          "sha1": "65ab1f268bfe7e4a3927215ed97c7ae1ac9eeba2",
+          "md5": "94e87f3115058030359c874368e333f2"
+        }
+      ]
+    },
+    {
+      "name": "fullNormalReleaseRuntimeElements-published",
+      "attributes": {
+        "InMobileDataLevel": "full",
+        "InMobileProtectionLevel": "normal",
+        "com.android.build.api.attributes.ProductFlavor:InMobileDataLevel": "full",
+        "com.android.build.api.attributes.ProductFlavor:InMobileProtectionLevel": "normal",
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.25"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-serialization-json",
+          "version": {
+            "requires": "1.6.3"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.10.0"
+          }
+        },
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "4.12.0"
+          }
+        },
+        {
+          "group": "io.insert-koin",
+          "module": "koin-core",
+          "version": {
+            "requires": "3.5.6"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.13.1"
+          }
+        },
+        {
+          "group": "com.inmobile",
+          "module": "inmobile-common",
+          "version": {
+            "requires": "2026.4.1"
+          }
+        },
+        {
+          "group": "androidx.biometric",
+          "module": "biometric",
+          "version": {
+            "requires": "1.1.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "inmobile-2026.4.1.aar",
+          "url": "inmobile-2026.4.1.aar",
+          "size": 2330469,
+          "sha512": "a4f848bfd9d13059f05e0c33355b5c2bef1cb070450df309d09a7ccf99a81ae80f41d09292c4b09c6a323c44789eb9ad027c62a8dfb1b47d7f7e1603d1650667",
+          "sha256": "c9e2d7a42e75051d189cfb24fb4e3ea290242050148133a816dd09a307c457d8",
+          "sha1": "65ab1f268bfe7e4a3927215ed97c7ae1ac9eeba2",
+          "md5": "94e87f3115058030359c874368e333f2"
+        }
+      ]
+    },
+    {
+      "name": "fullNormalReleaseSourcesElements-published",
+      "attributes": {
+        "InMobileDataLevel": "full",
+        "InMobileProtectionLevel": "normal",
+        "com.android.build.api.attributes.ProductFlavor:InMobileDataLevel": "full",
+        "com.android.build.api.attributes.ProductFlavor:InMobileProtectionLevel": "normal",
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      }
+    }
+  ]
+}
