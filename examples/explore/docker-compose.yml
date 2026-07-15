@@ -1,0 +1,94 @@
+services:
+  deuna-sdk-android-integration-tests:
+    build:
+      context: ${DOCKER_BUILD_CONTEXT:-../../}
+      dockerfile: examples/explore/Dockerfile
+    container_name: deuna-sdk-android-tests
+    hostname: deuna-sdk-android-tests
+
+    # Required for KVM acceleration (Ubuntu/Linux)
+    privileged: true
+    devices:
+      - /dev/kvm:/dev/kvm
+
+    # Environment variables
+    environment:
+      # DEUNA Configuration for e2e-pre-production
+      - DEUNA_API_ENDPOINT=${DEUNA_API_ENDPOINT:-http://apigw:8080}
+      - DEUNA_ENV=${DEUNA_ENV:-preprod}
+
+      # Admin credentials
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-developers@getduna.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-superadmin}
+
+      # Checkout domain for e2e-preproduction (checkout-base host)
+      - DEUNA_CHECKOUT_BASE_DOMAIN=${DEUNA_CHECKOUT_BASE_DOMAIN:-}
+
+      # Elements domain for e2e-preproduction (elements-link host)
+      - DEUNA_ELEMENTS_LINK_DOMAIN=${DEUNA_ELEMENTS_LINK_DOMAIN:-}
+
+      # Android SDK paths
+      - ANDROID_HOME=/opt/android-sdk
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+      # Proxy configuration (if needed)
+      - https_proxy=${https_proxy:-}
+      - http_proxy=${http_proxy:-}
+      - no_proxy=${no_proxy:-localhost,127.0.0.1}
+
+      # Test configuration (optimized for KVM)
+      - EMULATOR_WAIT_TIME=${EMULATOR_WAIT_TIME:-180}
+
+      # AWS Secrets Manager (LocalStack for e2e-pre-production)
+      - USE_LOCAL_STACK_SECRETS=yes
+      - SECRETS_REGION=us-east-2
+      - SECRETS_ENDPOINT=http://default-localstack-nginx:4080
+      - SECRETS_CREDENTIAL_ID=test
+      - SECRETS_CREDENTIAL_SECRET=test
+
+    # Volume mounts for test results
+    volumes:
+      - ./android-test-reports:/test-results
+      - ./build:/app/examples/explore/build
+      # Gradle cache for faster builds (container runs as androidusr, not root)
+      - gradle-cache:/home/androidusr/.gradle
+
+    # Dependencies - wait for e2e-pre-production services
+    depends_on:
+      - apigw
+      - ema
+      - merchant-auth-nginx
+      - user-auth-nginx
+      - payments-nginx
+      - deuna-squid-nginx
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "adb devices | grep -q device || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+
+    # Network for e2e-pre-production integration
+    networks:
+      - deuna-network
+
+volumes:
+  gradle-cache:
+    driver: local
+
+networks:
+  deuna-network:
+    external: true
