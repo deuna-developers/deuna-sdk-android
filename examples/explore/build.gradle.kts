@@ -1,0 +1,94 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+val appVersionName = project.findProperty("versionName") as String? ?: "1.0"
+val appGithubRepo = project.findProperty("githubRepo") as String? ?: ""
+val deunaWidgetHardwareAccelerated =
+    project.findProperty("deunaWidgetHardwareAccelerated") as String? ?: "true"
+val deunaWidgetForceSoftwareRendering =
+    project.findProperty("deunaWidgetForceSoftwareRendering") as String? ?: "false"
+
+android {
+    namespace = "com.deuna.explore"
+    compileSdk = 34
+
+    buildFeatures {
+        compose = true
+    }
+
+    defaultConfig {
+        applicationId = "com.deuna.explore"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = appVersionName
+        resValue("string", "github_repo", appGithubRepo)
+        manifestPlaceholders["deunaWidgetHardwareAccelerated"] = deunaWidgetHardwareAccelerated
+        manifestPlaceholders["deunaWidgetForceSoftwareRendering"] = deunaWidgetForceSoftwareRendering
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+}
+
+dependencies {
+    implementation(project(":sdk"))
+    // implementation(fileTree(mapOf("dir" to "../../sdk/libs/cybersource", "include" to listOf("*.aar"))))
+    // implementation(fileTree(mapOf("dir" to "../../sdk/libs/signifyd", "include" to listOf("*.aar"))))
+    implementation(fileTree(mapOf("dir" to "../../sdk/libs/accertify", "include" to listOf("*.aar"))))
+    // Dependencias transitivas de Accertify si se enlaza localmente:
+    implementation("io.insert-koin:koin-core:3.5.6")
+    implementation("androidx.biometric:biometric:1.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    implementation("androidx.webkit:webkit:1.14.0")
+    implementation("androidx.navigation:navigation-compose:2.8.9")
+    val composeBom = platform("androidx.compose:compose-bom:2025.02.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
+
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-svg:2.6.0")
+
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+}

@@ -1,0 +1,76 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.inmobile",
+    "module": "inmobile-common",
+    "version": "2026.4.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.25"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "inmobile-common-2026.4.1.aar",
+          "url": "inmobile-common-2026.4.1.aar",
+          "size": 21974,
+          "sha512": "195f3095dcacd467bbb64ceb19680a5561d10af8d194b2a79db6ba543dc24ebf00c29d5b15b7942fba7f7be06ff8fff4dfac65c7008a9bd5dfe65d1f56cb7047",
+          "sha256": "e309e708b7bde0b302941574d03f2c29780304cba170d50895238a0619dd9949",
+          "sha1": "cf6c5d22f8171005d5db09ef5d587b4f257c4cd0",
+          "md5": "f41d2d9739295658f6d8deaf7b9449a4"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.25"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "inmobile-common-2026.4.1.aar",
+          "url": "inmobile-common-2026.4.1.aar",
+          "size": 21974,
+          "sha512": "195f3095dcacd467bbb64ceb19680a5561d10af8d194b2a79db6ba543dc24ebf00c29d5b15b7942fba7f7be06ff8fff4dfac65c7008a9bd5dfe65d1f56cb7047",
+          "sha256": "e309e708b7bde0b302941574d03f2c29780304cba170d50895238a0619dd9949",
+          "sha1": "cf6c5d22f8171005d5db09ef5d587b4f257c4cd0",
+          "md5": "f41d2d9739295658f6d8deaf7b9449a4"
+        }
+      ]
+    }
+  ]
+}

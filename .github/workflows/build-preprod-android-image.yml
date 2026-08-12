@@ -1,0 +1,79 @@
+name: Build PreProduction Android Test Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - examples/widgets-in-modal/Dockerfile
+      - examples/widgets-in-modal/run-android-tests.sh
+      - examples/widgets-in-modal/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle/**
+      - gradlew
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: ECR image tag to publish
+        required: false
+        type: string
+        default: deuna-sdk-android-integration-tests-latest
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REGISTRY: 790714449507.dkr.ecr.us-east-2.amazonaws.com
+  ECR_REPOSITORY: pre-production
+  ROLE_TO_ASSUME: arn:aws:iam::790714449507:role/RoleForGithubPushECRAllServiceStaging
+  DEFAULT_IMAGE_TAG: deuna-sdk-android-integration-tests-latest
+
+jobs:
+  build-and-push:
+    name: Build and Push Android Test Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          mask-aws-account-id: false
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Resolve image tags
+        id: image
+        run: |
+          requested_tag="${{ inputs.image_tag }}"
+          if [ -z "$requested_tag" ]; then
+            requested_tag="${DEFAULT_IMAGE_TAG}"
+          fi
+
+          short_sha="${GITHUB_SHA::7}"
+          image_base="${ECR_REGISTRY}/${ECR_REPOSITORY}"
+
+          echo "tag=${requested_tag}" >> "$GITHUB_OUTPUT"
+          echo "image=${image_base}:${requested_tag}" >> "$GITHUB_OUTPUT"
+          echo "sha_image=${image_base}:deuna-sdk-android-integration-tests-${short_sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        run: |
+          docker build \
+            -f examples/widgets-in-modal/Dockerfile \
+            -t "${{ steps.image.outputs.image }}" \
+            -t "${{ steps.image.outputs.sha_image }}" \
+            .
+
+      - name: Push image
+        run: |
+          docker push "${{ steps.image.outputs.image }}"
+          docker push "${{ steps.image.outputs.sha_image }}"
