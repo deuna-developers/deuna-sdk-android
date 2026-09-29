@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <meta-data
+            android:name="com.deuna.explore.widget.force_software_rendering"
+            android:value="${deunaWidgetForceSoftwareRendering}" />
+
+        <activity
+            android:name="com.deuna.maven.web_views.activities.DeunaWidgetActivity"
+            android:hardwareAccelerated="${deunaWidgetHardwareAccelerated}"
+            tools:replace="android:hardwareAccelerated" />
+    </application>
+
+</manifest>
