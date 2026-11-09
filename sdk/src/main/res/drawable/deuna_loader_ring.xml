@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Static 3/4 ring arc, wrapped by deuna_loader_spinner.xml (animated-rotate) to produce a
+    Material-style indeterminate spinner. Needed because ProgressBar's default
+    ?android:attr/progressBarStyle resolves against the hosting Activity's theme: inside
+    DeunaWidgetActivity (Theme.Translucent.NoTitleBar, a plain platform theme, not
+    AppCompat/Material) it renders as the old pre-Material spinner, while the same ProgressBar
+    embedded in a merchant's own Material-themed Activity looks fine by accident. An explicit
+    drawable looks identical everywhere, with no new dependency (vector + animated-rotate are
+    native Android, no AppCompat/Material Components needed).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <path
+        android:pathData="M20,4 A16,16 0 1 1 4.6,14.2"
+        android:strokeColor="#2196F3"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+</vector>

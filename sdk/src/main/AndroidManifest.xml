@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Normal permission, granted at install with no user prompt. Needed by
+         DeunaWidgetActivity's foreground watcher to pull its own (isolated) task back to
+         front after the host app's task resumes (ENTP1-18281 follow-up). -->
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+    <application>
+        <!--
+            taskAffinity + singleTask isolate this Activity into its own task. Without it, it
+            shares the host app's task, and a host Activity declared android:launchMode="singleTask"
+            with an intent-filter for the merchant's own callback_urls scheme (the common deep-link
+            setup our docs recommend) collapses its back stack — including this Activity sitting on
+            top of it — the instant that deep link actually resolves (e.g. Mercado Pago's own
+            "return to store" button), destroying the WebView mid-payment before it can receive the
+            JS postMessage. Isolating the task means that collapse never reaches this Activity.
+        -->
+        <activity
+            android:name=".web_views.activities.DeunaWidgetActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.deuna.maven.widget"
+            android:excludeFromRecents="true" />
+        <activity
+            android:name=".wallets.google_pay.WalletPaymentActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+
+</manifest>

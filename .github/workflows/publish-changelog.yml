@@ -1,0 +1,232 @@
+name: Publish Android SDK Changelog
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install packaging --quiet
+
+      - name: Generate changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, re, sys, time
+          import urllib.request
+
+          GH_TOKEN = os.environ["GH_TOKEN"]
+          REPO = os.environ["REPO"]
+
+          FRONTMATTER = """\
+          ---
+          allow_crawlers: disabled
+          appearance:
+            table_of_contents: default
+          category:
+            uri: SDK
+          parent:
+            uri: android-sdk
+          position: 99
+          privacy:
+            view: anyone_with_link
+          slug: changelog-android
+          title: Changelog
+          ---
+
+          """
+
+          BULLET_RE = re.compile(r'^\* (.+?)(?:\s+by @[\w-]+ in https://github\.com/.+?/pull/\d+)?$', re.MULTILINE)
+          PR_LINK_RE = re.compile(r'\s*in https://github\.com/[^\s]+')
+          BY_RE = re.compile(r'\s*by @[\w-]+')
+          TICKET_RE = re.compile(r'\b[A-Z]{2,8}-\d{2,6}\b')
+          SKIP_RE = re.compile(r'^(chore|bump|ci:|Full Changelog|Merge pull|Merge branch|sync|release\s+v?\d)', re.IGNORECASE)
+          FEAT_RE = re.compile(r'^feat[\(\!]', re.IGNORECASE)
+          FIX_RE = re.compile(r'^fix[\(\!]', re.IGNORECASE)
+          SECURITY_RE = re.compile(r'security|vuln|cve', re.IGNORECASE)
+          BREAKING_RE = re.compile(r'BREAKING|!:', re.IGNORECASE)
+          CHORE_RE = re.compile(r'^(chore|refactor|docs|test|ci|build)[\(\!]?', re.IGNORECASE)
+
+          def gh_api(path):
+              req = urllib.request.Request(f"https://api.github.com{path}", headers={
+                  "Authorization": f"Bearer {GH_TOKEN}",
+                  "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              })
+              with urllib.request.urlopen(req) as r:
+                  return json.loads(r.read())
+
+          def fetch_releases():
+              all_r, page = [], 1
+              while True:
+                  batch = gh_api(f"/repos/{REPO}/releases?per_page=100&page={page}")
+                  if not batch: break
+                  all_r.extend(batch)
+                  if len(batch) < 100: break
+                  page += 1
+              return all_r
+
+          def sanitize_with_ai(tag, body):
+              if not body or not body.strip():
+                  return []
+              prompt = (
+                  "You are sanitizing SDK release notes for public documentation.\n\n"
+                  "Rules:\n"
+                  "- Remove internal ticket refs (ENTP1-1234, JIRA-567, any ALL_CAPS-NUMBER pattern)\n"
+                  "- Remove GitHub PR/issue links\n"
+                  "- Remove @username mentions\n"
+                  "- Remove internal file paths (e.g. src/foo/Bar.ts)\n"
+                  "- Remove merge commit lines and release/version bump lines\n"
+                  "- Keep actual change descriptions, clean and public-facing\n"
+                  "- Preserve conventional commit prefix (feat:, fix:, etc.)\n"
+                  "- Return one bullet point per line, each starting with '* '\n"
+                  "- If nothing meaningful, return empty\n\n"
+                  f"Release notes for {tag}:\n{body[:3000]}"
+              )
+              payload = json.dumps({
+                  "model": "gpt-4o-mini",
+                  "messages": [{"role": "user", "content": prompt}],
+                  "temperature": 0.1,
+                  "max_tokens": 1500,
+              }).encode()
+              req = urllib.request.Request(
+                  "https://models.inference.ai.azure.com/chat/completions",
+                  data=payload,
+                  headers={"Authorization": f"Bearer {GH_TOKEN}", "Content-Type": "application/json"}
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      resp = json.loads(r.read())
+                      text = resp["choices"][0]["message"]["content"].strip()
+                      return [l.strip().lstrip("*- ").strip() for l in text.splitlines() if l.strip().lstrip("*- ").strip() and len(l.strip()) > 5]
+              except Exception as e:
+                  print(f"  AI failed for {tag}: {e}", file=sys.stderr)
+                  return []
+
+          def clean_bullet(bullet):
+              m = re.match(r'^(?:feat|fix|chore|refactor|docs|test|ci|build|security)[\w\(\)-]*!?:\s*(.+)', bullet, re.IGNORECASE)
+              cleaned = m.group(1).strip() if m else bullet.strip()
+              cleaned = TICKET_RE.sub("", cleaned).strip(" ():,").strip()
+              return cleaned[0].upper() + cleaned[1:] if cleaned else bullet.strip()
+
+          def classify(bullet):
+              if SECURITY_RE.search(bullet): return "Security", clean_bullet(bullet)
+              if BREAKING_RE.search(bullet): return "Breaking", clean_bullet(bullet)
+              if FEAT_RE.match(bullet): return "Added", clean_bullet(bullet)
+              if FIX_RE.match(bullet): return "Fixed", clean_bullet(bullet)
+              if CHORE_RE.match(bullet): return None, None
+              return "Changed", clean_bullet(bullet)
+
+          def fallback_parse(body):
+              classified = {"Added": [], "Fixed": [], "Security": [], "Breaking": [], "Changed": []}
+              seen = set()
+              for bullet in BULLET_RE.findall(body or ""):
+                  bullet = PR_LINK_RE.sub("", BY_RE.sub("", bullet)).strip()
+                  if SKIP_RE.match(bullet): continue
+                  cat, cleaned = classify(bullet)
+                  if cat and cleaned and len(cleaned) > 5 and cleaned not in seen:
+                      seen.add(cleaned); classified[cat].append(cleaned)
+              return classified
+
+          def merge(a, b):
+              result = {}
+              for k in ["Added", "Fixed", "Security", "Breaking", "Changed"]:
+                  seen = set(); combined = a.get(k,[]) + b.get(k,[])
+                  result[k] = [x for x in combined if not (x in seen or seen.add(x))]
+              return result
+
+          def format_entry(semver, date, sections):
+              lines = [f"## [v{semver}] - {date}", ""]
+              for s in ["Breaking", "Security", "Added", "Fixed", "Changed"]:
+                  items = sections.get(s, [])
+                  if not items: continue
+                  lines += [f"### {s}", ""] + [f"- {i}" for i in items] + [""]
+              return "\n".join(lines)
+
+          print("Fetching releases...", file=sys.stderr)
+          releases = fetch_releases()
+          print(f"Found {len(releases)} releases", file=sys.stderr)
+
+          version_map = {}
+          for r in releases:
+              if r.get("prerelease"): continue
+              tag = r["tag_name"]
+              semver = tag.lstrip("v")
+              date = r["published_at"][:10]
+              body = r.get("body") or ""
+
+              print(f"  {tag} → v{semver} — sanitizing...", file=sys.stderr)
+              ai_bullets = sanitize_with_ai(tag, body)
+              time.sleep(0.3)
+
+              if ai_bullets:
+                  classified = {"Added": [], "Fixed": [], "Security": [], "Breaking": [], "Changed": []}
+                  seen = set()
+                  for bullet in ai_bullets:
+                      if SKIP_RE.match(bullet): continue
+                      cat, cleaned = classify(bullet)
+                      if cat and cleaned and len(cleaned) > 5 and cleaned not in seen:
+                          seen.add(cleaned); classified[cat].append(cleaned)
+              else:
+                  classified = fallback_parse(body)
+
+              total = sum(len(v) for v in classified.values())
+              print(f"    → {total} items", file=sys.stderr)
+
+              if semver not in version_map:
+                  version_map[semver] = {"date": date, "sections": classified}
+              else:
+                  version_map[semver]["sections"] = merge(version_map[semver]["sections"], classified)
+
+          if not version_map:
+              print("No releases found.", file=sys.stderr)
+              sys.exit(1)
+
+          from packaging.version import Version
+          try:
+              sorted_v = sorted(version_map.keys(), key=Version, reverse=True)
+          except Exception:
+              sorted_v = sorted(version_map.keys(), reverse=True)
+
+          entries = [format_entry(sv, version_map[sv]["date"], version_map[sv]["sections"])
+                     for sv in sorted_v if sum(len(v) for v in version_map[sv]["sections"].values()) > 0]
+
+          body_text = ("# Android SDK Changelog\n\n"
+                       "All notable changes to this project are documented here. "
+                       "Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) "
+                       "and [Semantic Versioning](https://semver.org/).\n\n---\n\n"
+                       + "\n---\n\n".join(entries)
+                       + "\n---\n\n"
+                       + "## Prior to v2.0.0\n\nInitial public releases covering Payment Widget, Elements, Voucher, and Next Action widgets.\n")
+
+          with open("/tmp/android-sdk-changelog.md", "w") as f:
+              f.write(FRONTMATTER + body_text)
+
+          print(f"\nGenerated {len(entries)} versions → /tmp/android-sdk-changelog.md", file=sys.stderr)
+          PYEOF
+
+      - name: Upload changelog to docs.deuna.com
+        env:
+          RDME_API_KEY: ${{ secrets.README_API_KEY }}
+        run: |
+          yes | npx rdme@latest reference upload /tmp/android-sdk-changelog.md --key "$RDME_API_KEY"

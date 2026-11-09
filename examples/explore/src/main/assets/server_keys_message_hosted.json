@@ -1,0 +1,8 @@
+{
+  "encryptionPubKey": "ENCRYPTION_KEY",
+  "encryptionPubKeyType": "RSA",
+  "signature": "SIGNATURE",
+  "signatureType": "RSA-PSS-SHA256",
+  "signingPubKey": "SIGNING_KEY",
+  "signingPubKeyType": "RSA"
+}
